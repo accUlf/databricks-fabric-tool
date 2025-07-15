@@ -493,35 +493,35 @@
                 }
             }
             
-            // Q2: Budget - Weiter optimiert für bessere Balance
+            // Q2: Budget - Keine negativen Werte
             if (answers.q2) {
                 if (answers.q2 === 'low') {
                     scores.fabric += 5;
-                    scores.databricks -= 2;
-                    scores.combination -= 4;
+                    scores.databricks += 0; // Kein Abzug
+                    scores.combination += 0; // Kein Abzug
                 } else if (answers.q2 === 'medium') {
                     scores.fabric += 2;
-                    scores.databricks += 3;  // Erhöht von 2
-                    scores.combination += 0; // Reduziert von 1
+                    scores.databricks += 3;
+                    scores.combination += 1;
                 } else if (answers.q2 === 'high') {
-                    scores.databricks += 4;  // Erhöht von 3
+                    scores.databricks += 4;
                     scores.fabric += 1;
-                    scores.combination += 3; // Reduziert von 4
+                    scores.combination += 3;
                 } else { // unlimited
-                    scores.databricks += 3;  // Erhöht von 2
-                    scores.fabric += 0;      // Reduziert von 1
-                    scores.combination += 5; // Reduziert von 6
+                    scores.databricks += 3;
+                    scores.fabric += 1;
+                    scores.combination += 5;
                 }
             }
             
-            // Q3: Technische Expertise
+            // Q3: Technische Expertise - Keine negativen Werte
             if (answers.q3) {
                 if (answers.q3 === 'high') {
                     scores.databricks += 4;
                     scores.combination += 2;
                 } else if (answers.q3 === 'low') {
                     scores.fabric += 4;
-                    scores.combination -= 1;
+                    scores.combination += 0; // Kein Abzug
                 } else { // medium
                     scores.fabric += 2;
                     scores.databricks += 2;
@@ -529,47 +529,47 @@
                 }
             }
             
-            // Q4: Anwendungsfall - Databricks stärken
+            // Q4: Anwendungsfall - Keine negativen Werte
             if (answers.q4) {
                 if (answers.q4 === 'bi') {
                     scores.fabric += 4;
-                    scores.databricks += 0;  // Erhöht von -1
+                    scores.databricks += 0;
                 } else if (answers.q4 === 'analytics') {
-                    scores.databricks += 5;  // Erhöht von 4
-                    scores.fabric -= 1;
+                    scores.databricks += 5;
+                    scores.fabric += 0; // Kein Abzug
                 } else { // both
-                    scores.combination += 5; // Reduziert von 6
-                    scores.databricks += 2;  // Erhöht von 1
+                    scores.combination += 5;
+                    scores.databricks += 2;
                     scores.fabric += 1;
                 }
             }
             
-            // Q5: Komplexitätstoleranz - Balance verbessern
+            // Q5: Komplexitätstoleranz - Keine negativen Werte
             if (answers.q5) {
                 if (answers.q5 === 'minimal') {
                     scores.fabric += 4;
-                    scores.databricks -= 1;  // Erhöht von -2
-                    scores.combination -= 5; // Verstärkt von -4
+                    scores.databricks += 0; // Kein Abzug
+                    scores.combination += 0; // Kein Abzug
                 } else if (answers.q5 === 'moderate') {
-                    scores.fabric += 1;      // Reduziert von 2
-                    scores.databricks += 3;  // Erhöht von 2
-                    scores.combination += 1; // Reduziert von 2
+                    scores.fabric += 1;
+                    scores.databricks += 3;
+                    scores.combination += 1;
                 } else { // high
-                    scores.databricks += 4;  // Erhöht von 3
-                    scores.fabric += 0;      // Reduziert von 1
-                    scores.combination += 4; // Reduziert von 5
+                    scores.databricks += 4;
+                    scores.fabric += 0;
+                    scores.combination += 4;
                 }
             }
             
-            // Q6: Cloud-Strategie
+            // Q6: Cloud-Strategie - Keine negativen Werte
             if (answers.q6) {
                 if (answers.q6 === 'azure') {
                     scores.fabric += 4;
-                    scores.databricks -= 1;
+                    scores.databricks += 0; // Kein Abzug
                     scores.combination += 2;
                 } else if (answers.q6 === 'multicloud') {
                     scores.databricks += 4;
-                    scores.fabric -= 2;
+                    scores.fabric += 0; // Kein Abzug
                     scores.combination += 3;
                 } else { // flexible
                     scores.databricks += 2;
@@ -578,15 +578,15 @@
                 }
             }
             
-            // Q7: Time-to-Value
+            // Q7: Time-to-Value - Keine negativen Werte
             if (answers.q7) {
                 if (answers.q7 === 'critical') {
                     scores.fabric += 3;
-                    scores.databricks -= 1;
-                    scores.combination -= 2;
+                    scores.databricks += 0; // Kein Abzug
+                    scores.combination += 0; // Kein Abzug
                 } else if (answers.q7 === 'flexible') {
                     scores.databricks += 3;
-                    scores.fabric -= 1;
+                    scores.fabric += 0; // Kein Abzug
                     scores.combination += 3;
                 } else { // important
                     scores.fabric += 2;
@@ -595,11 +595,11 @@
                 }
             }
             
-            // Q8: Datenverarbeitung
+            // Q8: Datenverarbeitung - Keine negativen Werte
             if (answers.q8) {
                 if (answers.q8 === 'realtime') {
                     scores.databricks += 4;
-                    scores.fabric -= 1;
+                    scores.fabric += 0; // Kein Abzug
                     scores.combination += 3;
                 } else if (answers.q8 === 'batch') {
                     scores.fabric += 3;
@@ -611,18 +611,18 @@
                 }
             }
             
-            // Q9: BI/Visualisierung - NEU mit starker Gewichtung
+            // Q9: BI/Visualisierung - Keine negativen Werte
             if (answers.q9) {
                 if (answers.q9 === 'critical') {
-                    scores.fabric += 5;  // Starker Vorteil für Fabric
-                    scores.databricks -= 2;  // Nachteil wegen Zusatzkosten
+                    scores.fabric += 5;
+                    scores.databricks += 0; // Kein Abzug
                     scores.combination += 1;
                 } else if (answers.q9 === 'important') {
                     scores.fabric += 3;
                     scores.databricks += 0;
                     scores.combination += 2;
                 } else if (answers.q9 === 'separate') {
-                    scores.databricks += 2;  // Kein Nachteil, da Tool vorhanden
+                    scores.databricks += 2;
                     scores.fabric += 0;
                     scores.combination += 1;
                 } else { // minimal
@@ -632,26 +632,29 @@
                 }
             }
             
-            // Q10: Open Source Integration - NEU
+            // Q10: Open Source Integration - Keine negativen Werte
             if (answers.q10) {
                 if (answers.q10 === 'critical') {
-                    scores.databricks += 5;  // Databricks basiert auf Open Source
-                    scores.fabric -= 2;      // Fabric ist proprietär
+                    scores.databricks += 5;
+                    scores.fabric += 0; // Kein Abzug
                     scores.combination += 2;
                 } else if (answers.q10 === 'important') {
                     scores.databricks += 3;
-                    scores.fabric -= 1;
+                    scores.fabric += 0; // Kein Abzug
                     scores.combination += 3;
                 } else if (answers.q10 === 'moderate') {
                     scores.databricks += 1;
                     scores.fabric += 1;
                     scores.combination += 2;
                 } else { // minimal
-                    scores.fabric += 3;      // Vorteil für integrierte Lösung
+                    scores.fabric += 3;
                     scores.databricks += 0;
                     scores.combination += 0;
                 }
             }
+            
+            // K.O.-Kriterien anwenden - Setze Score auf 0
+            applyKnockoutCriteria();
             
             // Update Display
             document.getElementById('databricksScore').textContent = scores.databricks;
@@ -659,76 +662,57 @@
             document.getElementById('combinationScore').textContent = scores.combination;
         }
         
-        function calculateResult() {
-            // K.O.-KRITERIEN PRÜFEN
-            
+        function applyKnockoutCriteria() {
             // K.O. für Fabric: Multi-Cloud ist zwingend erforderlich
             if (answers.q6 === 'multicloud') {
-                // Fabric scheidet aus - nur Databricks oder Kombination möglich
-                if (answers.q2 === 'low' || answers.q5 === 'minimal') {
-                    // Bei niedrigem Budget/Komplexität → nur Databricks
-                    return 'databricks';
-                }
-                // Sonst Entscheidung zwischen Databricks und Kombination
-                if (scores.combination >= scores.databricks + 3) {
-                    return 'combination';
-                }
-                return 'databricks';
+                scores.fabric = 0;
             }
             
             // K.O. für Databricks: Minimale Komplexität + niedriges Budget
             if (answers.q5 === 'minimal' && answers.q2 === 'low') {
-                return 'fabric'; // Databricks zu komplex und teuer
+                scores.databricks = 0;
             }
             
-            // K.O. für Kombination: Niedriges Budget
-            if (answers.q2 === 'low') {
-                // Kombination nicht leistbar - zwischen Fabric und Databricks entscheiden
-                if (scores.fabric > scores.databricks) {
-                    return 'fabric';
+            // K.O. für Kombination: Niedriges Budget ODER Minimale Komplexität
+            if (answers.q2 === 'low' || answers.q5 === 'minimal') {
+                scores.combination = 0;
+            }
+        }
+        
+        function getScoreDisplay(platform) {
+            const score = scores[platform];
+            if (score === 0) {
+                // Prüfe K.O.-Kriterien
+                if (platform === 'fabric' && answers.q6 === 'multicloud') {
+                    return '0 Punkte (K.O.: Multi-Cloud erforderlich)';
+                } else if (platform === 'databricks' && answers.q5 === 'minimal' && answers.q2 === 'low') {
+                    return '0 Punkte (K.O.: Zu komplex + zu teuer)';
+                } else if (platform === 'combination' && answers.q2 === 'low') {
+                    return '0 Punkte (K.O.: Budget zu niedrig)';
+                } else if (platform === 'combination' && answers.q5 === 'minimal') {
+                    return '0 Punkte (K.O.: Zu komplex)';
                 } else {
-                    return 'databricks';
+                    return '0 Punkte';
                 }
-            }
-            
-            // K.O. für Kombination: Minimale Komplexitätstoleranz
-            if (answers.q5 === 'minimal') {
-                // Zu komplex für zwei Plattformen
-                if (scores.fabric > scores.databricks) {
-                    return 'fabric';
-                } else {
-                    return 'databricks';
-                }
-            }
-            
-            // STANDARD-ENTSCHEIDUNG (nach K.O.-Kriterien)
-            
-            // Angepasste Schwelle für Kombination
-            const combinationThreshold = 3;
-            
-            // Prüfe ob Kombination führt
-            if (scores.combination >= scores.databricks + combinationThreshold && 
-                scores.combination >= scores.fabric + combinationThreshold) {
-                return 'combination';
-            }
-            
-            // Bei sehr knappen Entscheidungen, berücksichtige Kontext
-            const diff = Math.abs(scores.databricks - scores.fabric);
-            if (diff <= 2) { // Sehr knapp
-                // Entscheide basierend auf kritischen Faktoren
-                if (answers.q3 === 'low' && answers.q4 === 'bi') {
-                    return 'fabric';
-                } else if (answers.q3 === 'high' && answers.q4 === 'analytics') {
-                    return 'databricks';
-                } else if (answers.q1 === 'enterprise' && answers.q2 !== 'low') {
-                    return 'combination';
-                }
-            }
-            
-            // Standard-Entscheidung
-            if (scores.databricks > scores.fabric) {
-                return 'databricks';
             } else {
+                return `${score} Punkte`;
+            }
+        }
+        
+        function calculateResult() {
+            // Einfache Entscheidung basierend auf höchstem Score
+            // K.O.-Kriterien sind bereits in den Scores berücksichtigt (Score = 0)
+            
+            const maxScore = Math.max(scores.databricks, scores.fabric, scores.combination);
+            
+            if (scores.combination === maxScore && scores.combination > 0) {
+                return 'combination';
+            } else if (scores.databricks === maxScore && scores.databricks > 0) {
+                return 'databricks';
+            } else if (scores.fabric === maxScore && scores.fabric > 0) {
+                return 'fabric';
+            } else {
+                // Fallback wenn alle Scores 0 sind (sollte nicht passieren)
                 return 'fabric';
             }
         }
@@ -851,9 +835,9 @@
                 
                 <div class="result-details" style="background: rgba(255,255,255,0.3);">
                     <h3>📊 Ihre Bewertung im Detail:</h3>
-                    <p>Databricks: ${scores.databricks} Punkte<br>
-                    Microsoft Fabric: ${scores.fabric} Punkte<br>
-                    Kombination: ${scores.combination} Punkte</p>
+                    <p>Databricks: ${getScoreDisplay('databricks')}<br>
+                    Microsoft Fabric: ${getScoreDisplay('fabric')}<br>
+                    Kombination: ${getScoreDisplay('combination')}</p>
                 </div>
             `;
             
