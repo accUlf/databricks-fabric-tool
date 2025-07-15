@@ -417,8 +417,15 @@
             fabric: 0,
             combination: 0
         };
+        let questionAnswered = false; // Flag to prevent multiple answers
         
         function answer(questionId, value) {
+            // Prevent multiple answers for the same question
+            if (questionAnswered) {
+                return;
+            }
+            
+            questionAnswered = true;
             answers[questionId] = value;
             
             // Visuelles Feedback
@@ -440,6 +447,7 @@
                 } else {
                     showResult();
                 }
+                questionAnswered = false; // Reset flag for next question
             }, 300);
         }
         
@@ -856,6 +864,7 @@
             Object.keys(answers).forEach(key => delete answers[key]);
             currentQuestion = 1;
             scores = { databricks: 0, fabric: 0, combination: 0 };
+            questionAnswered = false; // Reset question flag
             
             // Reset UI
             document.querySelectorAll('.decision-container').forEach((container, index) => {
