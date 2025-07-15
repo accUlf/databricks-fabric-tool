@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entscheidungsbaum: Databricks vs. Fabric</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #2c3e50;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+        
+        .decision-container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        
+        .decision-container.active {
+            border-color: #3498db;
+            background: #ebf5fb;
+        }
+        
+        .question {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .question-info {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+        
+        .options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .option-btn {
+            padding: 10px 20px;
+            border: 2px solid #3498db;
+            background: white;
+            color: #3498db;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+        }
+        
+        .option-btn:hover {
+            background: #3498db;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+        
+        .option-btn.selected {
+            background: #3498db;
+            color: white;
+        }
+        
+        .result-container {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 8px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .result-container.show {
+            display: block;
+        }
+        
+        .result-databricks {
+            background: #ff6f61;
+            color: white;
+        }
+        
+        .result-fabric {
+            background: #0078d4;
+            color: white;
+        }
+        
+        .result-combination {
+            background: linear-gradient(135deg, #ff6f61 0%, #0078d4 100%);
+            color: white;
+        }
+        
+        .result-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .result-description {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .result-details {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        
+        .result-details h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        
+        .result-details ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .reset-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .reset-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #3498db;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .score-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .score-display.show {
+            display: block;
+        }
+        
+        .score-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .score-item {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .score-item.databricks {
+            background: rgba(255, 111, 97, 0.2);
+            color: #ff6f61;
+        }
+        
+        .score-item.fabric {
+            background: rgba(0, 120, 212, 0.2);
+            color: #0078d4;
+        }
+        
+        .score-item.combination {
+            background: rgba(128, 0, 128, 0.2);
+            color: #800080;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .icon {
+            font-size: 28px;
+        }
+        
+        @media (max-width: 768px) {
+            .options {
+                flex-direction: column;
+            }
+            
+            .option-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Entscheidungsbaum: Datenplattform-Auswahl</h1>
+        <p class="subtitle">Beantworten Sie die Fragen, um die optimale Plattform für Ihre Anforderungen zu finden</p>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 10px;">Bereitgestellt von</p>
+            <svg width="200" height="60" viewBox="0 0 800 240" xmlns="http://www.w3.org/2000/svg">
+                <!-- accantec logo -->
+                <g transform="scale(0.8)">
+                    <!-- Orange square -->
+                    <rect x="650" y="10" width="140" height="140" fill="#ff6f2d" rx="10"/>
+                    <!-- White curve in square -->
+                    <path d="M 660 100 Q 720 20, 790 20" fill="none" stroke="white" stroke-width="25" stroke-linecap="round"/>
+                    
+                    <!-- accantec text -->
+                    <text x="0" y="110" font-family="Arial, sans-serif" font-size="120" fill="#5a5a5a" font-weight="300">accantec</text>
+                    
+                    <!-- part of xiF -->
+                    <text x="160" y="210" font-family="Arial, sans-serif" font-size="65" fill="#5a5a5a" font-weight="300">part of</text>
+                    <text x="360" y="210" font-family="Arial, sans-serif" font-size="80" fill="#5a5a5a" font-weight="400">x</text>
+                    <text x="410" y="215" font-family="Arial, sans-serif" font-size="65" fill="#5a5a5a" font-weight="300" style="font-style: italic;">i</text>
+                    <text x="440" y="210" font-family="Arial, sans-serif" font-size="80" fill="#5a5a5a" font-weight="400">F</text>
+                </g>
+            </svg>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+        
+        <!-- Frage 1 -->
+        <div class="decision-container active" id="q1">
+            <div class="question">1. Wie groß ist Ihr Unternehmen?</div>
+            <div class="options">
+                <button class="option-btn" onclick="answer('q1', 'startup')">Startup (< 50 MA)</button>
+                <button class="option-btn" onclick="answer('q1', 'mittelstand')">Mittelstand (50-500 MA)</button>
+                <button class="option-btn" onclick="answer('q1', 'enterprise')">Großunternehmen (> 500 MA)</button>
+            </div>
+        </div>
+        
+        <!-- Frage 2 -->
+        <div class="decision-container hidden" id="q2">
+            <div class="question">2. Welches Budget steht für Datenplattformen zur Verfügung?</div>
+            <div class="question-info">Inkl. Lizenzen, Infrastruktur und Betrieb pro Jahr</div>
+            <div class="options">
+                <button class="option-btn" onclick="answer('q2', 'low')">< 50.000 €/Jahr</button>
+                <button class="option-btn" onclick="answer('q2', 'medium')">50.000 - 250.000 €/Jahr</button>
+                <button class="option-btn" onclick="answer('q2', 'high')">250.000 - 1 Mio. €/Jahr</button>
+                <button class="option-btn" onclick="answer('q2', 'unlimited')">Über 1 Mio. €/Jahr</button>
+            </div>
+        </div>
+        
+        <!-- Frage 3 -->
+        <div class="decision-container hidden" id="q3">
+            <div class="question">3. Welche technische Expertise ist in Ihrem Team vorhanden?</div>
+            <div class="options">
+                <button class="option-btn" onclick="answer('q3', 'low')">Business Analysten / Power User</button>
+                <button class="option-btn" onclick="answer('q3', 'medium')">Gemischtes Team (IT + Business)</button>
+                <button class="option-btn" onclick="answer('q3', 'high')">Data Engineers / Scientists</button>
+            </div>
+        </div>
+        
+        <!-- Frage 4 -->
+        <div class="decision-container hidden" id="q4">
+            <div class="question">4. Was ist Ihr primärer Anwendungsfall?</div>
+            <div class="options">
+                <button class="option-btn" onclick="answer('q4', 'bi')">Business Intelligence & Reporting</button>
+                <button class="option-btn" onclick="answer('q4', 'analytics')">Advanced Analytics & ML</button>
+                <button class="option-btn" onclick="answer('q4', 'both')">Beides gleichermaßen wichtig</button>
+            </div>
+        </div>
+        
+        <!-- Frage 5 -->
+        <div class="decision-container hidden" id="q5">
+            <div class="question">5. Wie viel Komplexität kann Ihre Organisation bewältigen?</div>
+            <div class="question-info">Berücksichtigen Sie Administration, Schulung und Support</div>
+            <div class="options">
+                <button class="option-btn" onclick="answer('q5', 'minimal')">Minimal - Eine einfache Lösung</button>
+                <button class="option-btn" onclick="answer('q5', 'moderate')">Moderat - Etwas Komplexität ok</button>
+                <button class="option-btn" onclick="answer('q5', 'high')">Hoch - Wir haben dedizierte Teams</button>
+            </div>
+        </div>
+        
+        <!-- Frage 6 -->
+        <div class="decision-container hidden" id="q6">
+            <div class="question">6. Welche Cloud-Strategie verfolgen Sie?</div>
+            <div class="options">
+                <button class="option-btn" onclick="answer('q6', 'azure')">Azure-First / Microsoft-zentriert</button>
+                <button class="option-btn" onclick="answer('q6', 'multicloud')">Multi-Cloud erforderlich</button>
+                <button class="option-btn" onclick="answer('q6', 'flexible')">Flexibel / Noch offen</button>
+            </div>
+        </div>
+        
+        <!-- Frage 7 -->
+        <div class="decision-container hidden" id="q7">
+            <div class="question">7. Wie wichtig ist Time-to-Value?</div>
+            <div class="options">
+                <button class="option-btn" onclick="answer('q7', 'critical')">Kritisch (< 3 Monate)</button>
+                <button class="option-btn" onclick="answer('q7', 'important')">Wichtig (3-6 Monate)</button>
+                <button class="option-btn" onclick="answer('q7', 'flexible')">Flexibel (> 6 Monate ok)</button>
+            </div>
+        </div>
+        
+        <!-- Frage 8 -->
+        <div class="decision-container hidden" id="q8">
+            <div class="question">8. Welche Datenverarbeitungs-Anforderungen haben Sie?</div>
+            <div class="options">
+                <button class="option-btn" onclick="answer('q8', 'batch')">Primär Batch-Processing</button>
+                <button class="option-btn" onclick="answer('q8', 'realtime')">Real-time / Streaming wichtig</button>
+                <button class="option-btn" onclick="answer('q8', 'mixed')">Gemischte Anforderungen</button>
+            </div>
+        </div>
+        
+        <!-- Frage 9 -->
+        <div class="decision-container hidden" id="q9">
+            <div class="question">9. Wie wichtig ist integrierte Visualisierung/BI?</div>
+            <div class="question-info">Bedenken Sie: Power BI ist bei Fabric integriert, Databricks benötigt separates BI-Tool</div>
+            <div class="options">
+                <button class="option-btn" onclick="answer('q9', 'critical')">Kritisch - Alles aus einer Hand</button>
+                <button class="option-btn" onclick="answer('q9', 'important')">Wichtig - aber flexibel</button>
+                <button class="option-btn" onclick="answer('q9', 'separate')">Haben bereits BI-Tool</button>
+                <button class="option-btn" onclick="answer('q9', 'minimal')">Wenig BI-Bedarf</button>
+            </div>
+        </div>
+        
+        <!-- Frage 10 - NEU -->
+        <div class="decision-container hidden" id="q10">
+            <div class="question">10. Wie wichtig ist Open Source Integration?</div>
+            <div class="question-info">z.B. Apache Airflow, dbt, MLflow, Kubernetes, Custom Libraries</div>
+            <div class="options">
+                <button class="option-btn" onclick="answer('q10', 'critical')">Kritisch - Open Source First</button>
+                <button class="option-btn" onclick="answer('q10', 'important')">Wichtig - Vendor Lock-in vermeiden</button>
+                <button class="option-btn" onclick="answer('q10', 'moderate')">Moderat - Pragmatischer Mix</button>
+                <button class="option-btn" onclick="answer('q10', 'minimal')">Unwichtig - Komfort vor Flexibilität</button>
+            </div>
+        </div>
+        
+        <!-- Score Display -->
+        <div class="score-display" id="scoreDisplay">
+            <h3>Bewertungsstand:</h3>
+            <div class="score-bar">
+                <div class="score-item databricks">
+                    <div style="font-size: 20px;">🔥</div>
+                    <div>Databricks</div>
+                    <div id="databricksScore" style="font-weight: bold;">0</div>
+                </div>
+                <div class="score-item fabric">
+                    <div style="font-size: 20px;">📊</div>
+                    <div>Fabric</div>
+                    <div id="fabricScore" style="font-weight: bold;">0</div>
+                </div>
+                <div class="score-item combination">
+                    <div style="font-size: 20px;">🔀</div>
+                    <div>Kombination</div>
+                    <div id="combinationScore" style="font-weight: bold;">0</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ergebnis-Container -->
+        <div class="result-container" id="result">
+            <!-- Wird dynamisch gefüllt -->
+        </div>
+        
+        <button class="reset-btn hidden" id="resetBtn" onclick="resetQuiz()">Neue Bewertung starten</button>
+        
+        <div style="text-align: center; margin-top: 40px; padding-top: 30px; border-top: 1px solid #e9ecef;">
+            <p style="color: #95a5a6; font-size: 12px; margin-bottom: 5px;">
+                Entwickelt mit Expertise in Datenplattform-Architektur
+            </p>
+            <p style="color: #95a5a6; font-size: 12px;">
+                © 2024 accantec group AG - part of x|F
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        const answers = {};
+        let currentQuestion = 1;
+        const totalQuestions = 10; // Erhöht von 9 auf 10
+        let scores = {
+            databricks: 0,
+            fabric: 0,
+            combination: 0
+        };
+        
+        function answer(questionId, value) {
+            answers[questionId] = value;
+            
+            // Visuelles Feedback
+            const container = document.getElementById(questionId);
+            const buttons = container.querySelectorAll('.option-btn');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+            
+            // Update Scores sofort
+            updateScores();
+            
+            // Progress Update
+            updateProgress();
+            
+            // Nächste Frage oder Ergebnis
+            setTimeout(() => {
+                if (currentQuestion < totalQuestions) {
+                    showNextQuestion();
+                } else {
+                    showResult();
+                }
+            }, 300);
+        }
+        
+        function showNextQuestion() {
+            document.getElementById(`q${currentQuestion}`).classList.remove('active');
+            currentQuestion++;
+            const nextQuestion = document.getElementById(`q${currentQuestion}`);
+            nextQuestion.classList.remove('hidden');
+            setTimeout(() => nextQuestion.classList.add('active'), 50);
+            
+            // Zeige Score Display ab Frage 3
+            if (currentQuestion >= 3) {
+                document.getElementById('scoreDisplay').classList.add('show');
+            }
+        }
+        
+        function updateProgress() {
+            const progress = (Object.keys(answers).length / totalQuestions) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+        
+        function updateScores() {
+            // Reset scores
+            scores = { databricks: 0, fabric: 0, combination: 0 };
+            
+            // Berechne Scores basierend auf bisherigen Antworten
+            
+            // Q1: Unternehmensgröße
+            if (answers.q1) {
+                if (answers.q1 === 'startup') {
+                    scores.fabric += 3;
+                    scores.databricks += 2;
+                } else if (answers.q1 === 'mittelstand') {
+                    scores.fabric += 2;
+                    scores.databricks += 2;
+                    scores.combination += 2;
+                } else { // enterprise
+                    scores.combination += 4;
+                    scores.databricks += 2;
+                    scores.fabric += 1;
+                }
+            }
+            
+            // Q2: Budget - Weiter optimiert für bessere Balance
+            if (answers.q2) {
+                if (answers.q2 === 'low') {
+                    scores.fabric += 5;
+                    scores.databricks -= 2;
+                    scores.combination -= 4;
+                } else if (answers.q2 === 'medium') {
+                    scores.fabric += 2;
+                    scores.databricks += 3;  // Erhöht von 2
+                    scores.combination += 0; // Reduziert von 1
+                } else if (answers.q2 === 'high') {
+                    scores.databricks += 4;  // Erhöht von 3
+                    scores.fabric += 1;
+                    scores.combination += 3; // Reduziert von 4
+                } else { // unlimited
+                    scores.databricks += 3;  // Erhöht von 2
+                    scores.fabric += 0;      // Reduziert von 1
+                    scores.combination += 5; // Reduziert von 6
+                }
+            }
+            
+            // Q3: Technische Expertise
+            if (answers.q3) {
+                if (answers.q3 === 'high') {
+                    scores.databricks += 4;
+                    scores.combination += 2;
+                } else if (answers.q3 === 'low') {
+                    scores.fabric += 4;
+                    scores.combination -= 1;
+                } else { // medium
+                    scores.fabric += 2;
+                    scores.databricks += 2;
+                    scores.combination += 3;
+                }
+            }
+            
+            // Q4: Anwendungsfall - Databricks stärken
+            if (answers.q4) {
+                if (answers.q4 === 'bi') {
+                    scores.fabric += 4;
+                    scores.databricks += 0;  // Erhöht von -1
+                } else if (answers.q4 === 'analytics') {
+                    scores.databricks += 5;  // Erhöht von 4
+                    scores.fabric -= 1;
+                } else { // both
+                    scores.combination += 5; // Reduziert von 6
+                    scores.databricks += 2;  // Erhöht von 1
+                    scores.fabric += 1;
+                }
+            }
+            
+            // Q5: Komplexitätstoleranz - Balance verbessern
+            if (answers.q5) {
+                if (answers.q5 === 'minimal') {
+                    scores.fabric += 4;
+                    scores.databricks -= 1;  // Erhöht von -2
+                    scores.combination -= 5; // Verstärkt von -4
+                } else if (answers.q5 === 'moderate') {
+                    scores.fabric += 1;      // Reduziert von 2
+                    scores.databricks += 3;  // Erhöht von 2
+                    scores.combination += 1; // Reduziert von 2
+                } else { // high
+                    scores.databricks += 4;  // Erhöht von 3
+                    scores.fabric += 0;      // Reduziert von 1
+                    scores.combination += 4; // Reduziert von 5
+                }
+            }
+            
+            // Q6: Cloud-Strategie
+            if (answers.q6) {
+                if (answers.q6 === 'azure') {
+                    scores.fabric += 4;
+                    scores.databricks -= 1;
+                    scores.combination += 2;
+                } else if (answers.q6 === 'multicloud') {
+                    scores.databricks += 4;
+                    scores.fabric -= 2;
+                    scores.combination += 3;
+                } else { // flexible
+                    scores.databricks += 2;
+                    scores.fabric += 2;
+                    scores.combination += 2;
+                }
+            }
+            
+            // Q7: Time-to-Value
+            if (answers.q7) {
+                if (answers.q7 === 'critical') {
+                    scores.fabric += 3;
+                    scores.databricks -= 1;
+                    scores.combination -= 2;
+                } else if (answers.q7 === 'flexible') {
+                    scores.databricks += 3;
+                    scores.fabric -= 1;
+                    scores.combination += 3;
+                } else { // important
+                    scores.fabric += 2;
+                    scores.databricks += 2;
+                    scores.combination += 1;
+                }
+            }
+            
+            // Q8: Datenverarbeitung
+            if (answers.q8) {
+                if (answers.q8 === 'realtime') {
+                    scores.databricks += 4;
+                    scores.fabric -= 1;
+                    scores.combination += 3;
+                } else if (answers.q8 === 'batch') {
+                    scores.fabric += 3;
+                    scores.databricks += 1;
+                } else { // mixed
+                    scores.combination += 5;
+                    scores.databricks += 1;
+                    scores.fabric += 1;
+                }
+            }
+            
+            // Q9: BI/Visualisierung - NEU mit starker Gewichtung
+            if (answers.q9) {
+                if (answers.q9 === 'critical') {
+                    scores.fabric += 5;  // Starker Vorteil für Fabric
+                    scores.databricks -= 2;  // Nachteil wegen Zusatzkosten
+                    scores.combination += 1;
+                } else if (answers.q9 === 'important') {
+                    scores.fabric += 3;
+                    scores.databricks += 0;
+                    scores.combination += 2;
+                } else if (answers.q9 === 'separate') {
+                    scores.databricks += 2;  // Kein Nachteil, da Tool vorhanden
+                    scores.fabric += 0;
+                    scores.combination += 1;
+                } else { // minimal
+                    scores.databricks += 1;
+                    scores.fabric += 1;
+                    scores.combination += 0;
+                }
+            }
+            
+            // Q10: Open Source Integration - NEU
+            if (answers.q10) {
+                if (answers.q10 === 'critical') {
+                    scores.databricks += 5;  // Databricks basiert auf Open Source
+                    scores.fabric -= 2;      // Fabric ist proprietär
+                    scores.combination += 2;
+                } else if (answers.q10 === 'important') {
+                    scores.databricks += 3;
+                    scores.fabric -= 1;
+                    scores.combination += 3;
+                } else if (answers.q10 === 'moderate') {
+                    scores.databricks += 1;
+                    scores.fabric += 1;
+                    scores.combination += 2;
+                } else { // minimal
+                    scores.fabric += 3;      // Vorteil für integrierte Lösung
+                    scores.databricks += 0;
+                    scores.combination += 0;
+                }
+            }
+            
+            // Update Display
+            document.getElementById('databricksScore').textContent = scores.databricks;
+            document.getElementById('fabricScore').textContent = scores.fabric;
+            document.getElementById('combinationScore').textContent = scores.combination;
+        }
+        
+        function calculateResult() {
+            // K.O.-KRITERIEN PRÜFEN
+            
+            // K.O. für Fabric: Multi-Cloud ist zwingend erforderlich
+            if (answers.q6 === 'multicloud') {
+                // Fabric scheidet aus - nur Databricks oder Kombination möglich
+                if (answers.q2 === 'low' || answers.q5 === 'minimal') {
+                    // Bei niedrigem Budget/Komplexität → nur Databricks
+                    return 'databricks';
+                }
+                // Sonst Entscheidung zwischen Databricks und Kombination
+                if (scores.combination >= scores.databricks + 3) {
+                    return 'combination';
+                }
+                return 'databricks';
+            }
+            
+            // K.O. für Databricks: Minimale Komplexität + niedriges Budget
+            if (answers.q5 === 'minimal' && answers.q2 === 'low') {
+                return 'fabric'; // Databricks zu komplex und teuer
+            }
+            
+            // K.O. für Kombination: Niedriges Budget
+            if (answers.q2 === 'low') {
+                // Kombination nicht leistbar - zwischen Fabric und Databricks entscheiden
+                if (scores.fabric > scores.databricks) {
+                    return 'fabric';
+                } else {
+                    return 'databricks';
+                }
+            }
+            
+            // K.O. für Kombination: Minimale Komplexitätstoleranz
+            if (answers.q5 === 'minimal') {
+                // Zu komplex für zwei Plattformen
+                if (scores.fabric > scores.databricks) {
+                    return 'fabric';
+                } else {
+                    return 'databricks';
+                }
+            }
+            
+            // STANDARD-ENTSCHEIDUNG (nach K.O.-Kriterien)
+            
+            // Angepasste Schwelle für Kombination
+            const combinationThreshold = 3;
+            
+            // Prüfe ob Kombination führt
+            if (scores.combination >= scores.databricks + combinationThreshold && 
+                scores.combination >= scores.fabric + combinationThreshold) {
+                return 'combination';
+            }
+            
+            // Bei sehr knappen Entscheidungen, berücksichtige Kontext
+            const diff = Math.abs(scores.databricks - scores.fabric);
+            if (diff <= 2) { // Sehr knapp
+                // Entscheide basierend auf kritischen Faktoren
+                if (answers.q3 === 'low' && answers.q4 === 'bi') {
+                    return 'fabric';
+                } else if (answers.q3 === 'high' && answers.q4 === 'analytics') {
+                    return 'databricks';
+                } else if (answers.q1 === 'enterprise' && answers.q2 !== 'low') {
+                    return 'combination';
+                }
+            }
+            
+            // Standard-Entscheidung
+            if (scores.databricks > scores.fabric) {
+                return 'databricks';
+            } else {
+                return 'fabric';
+            }
+        }
+        
+        function showResult() {
+            const recommendation = calculateResult();
+            const resultContainer = document.getElementById('result');
+            
+            const results = {
+                databricks: {
+                    title: '🔥 Databricks',
+                    description: 'Databricks ist die optimale Wahl für Ihre Anforderungen.',
+                    reasons: [
+                        'Maximale technische Flexibilität und Performance',
+                        'Führende ML/AI-Capabilities mit MLflow',
+                        'Multi-Cloud-Unterstützung für zukunftssichere Architektur',
+                        'Open-Source-basiert ohne Vendor-Lock-in',
+                        'Native Integration mit Apache Spark, Delta Lake, MLflow',
+                        'Volle Kompatibilität mit Python/R-Ökosystem und Libraries'
+                    ],
+                    nextSteps: [
+                        'Proof of Concept mit kritischem Use Case starten',
+                        'Team in Spark und Python schulen',
+                        'Delta Lake Architektur designen',
+                        'MLflow für Model Management evaluieren'
+                    ],
+                    considerations: [
+                        'Höhere technische Komplexität erfordert spezialisiertes Team',
+                        'Zusätzliche BI-Tools für Business User notwendig (Tableau, Power BI, Qlik, etc.)',
+                        'BI-Tool-Kosten addieren sich zu Plattformkosten (50-100€/User/Monat)',
+                        'Integration zwischen Databricks und BI-Tool muss gepflegt werden',
+                        'Kostenstruktur kann bei unsachgemäßer Nutzung explodieren',
+                        '⚠️ ACHTUNG: Bei "BI alles aus einer Hand" als kritisch → Fabric oder Kombination nötig!'
+                    ],
+                    costEstimate: 'Typische Kosten: 2.000-20.000€/Monat je nach Nutzung + BI-Tool (z.B. Tableau: 70€/User/Monat, Power BI: 10€/User/Monat)'
+                },
+                fabric: {
+                    title: '📊 Microsoft Fabric',
+                    description: 'Microsoft Fabric ist die ideale Plattform für Ihre Organisation.',
+                    reasons: [
+                        'Nahtlose Integration in Microsoft-Ökosystem',
+                        'Niedrige Einstiegshürde für Business User',
+                        'Vereinfachte Administration und Governance',
+                        'Integrierte BI-Capabilities mit Power BI'
+                    ],
+                    nextSteps: [
+                        'Fabric Trial mit F64 Capacity starten',
+                        'Bestehende Power BI Reports migrieren',
+                        'OneLake Datenarchitektur planen',
+                        'Copilot-Features für Self-Service aktivieren'
+                    ],
+                    considerations: [
+                        'Primär auf Azure beschränkt',
+                        'ML/AI-Features weniger ausgereift als bei Databricks',
+                        'Performance-Limitierungen bei sehr großen Datenmengen',
+                        'Eingeschränkte Open-Source-Integration (kein nativer Airflow, dbt, etc.)',
+                        'Vendor-Lock-in bei Microsoft-Technologien',
+                        '⚠️ ACHTUNG: Bei "Open Source First" als kritisch → Databricks oder Kombination nötig!'
+                    ],
+                    costEstimate: 'Typische Kosten: 320-10.000€/Monat (F2-F64 Capacity)'
+                },
+                combination: {
+                    title: '🔀 Hybride Lösung',
+                    description: 'Eine Kombination aus Databricks und Fabric maximiert Ihre Möglichkeiten.',
+                    reasons: [
+                        'Best-of-Breed-Ansatz für unterschiedliche Anforderungen',
+                        'Databricks für technische Workloads, Fabric für Business User',
+                        'Maximale Flexibilität und Zukunftssicherheit',
+                        'Optimale Nutzung vorhandener Kompetenzen'
+                    ],
+                    nextSteps: [
+                        'Klare Abgrenzung der Anwendungsfälle definieren',
+                        'OneLake Shortcuts für Datenintegration einrichten',
+                        'Governance-Strategie über beide Plattformen entwickeln',
+                        'Pilotprojekt mit beiden Technologien starten'
+                    ],
+                    considerations: [
+                        'Höhere Gesamtkomplexität und Verwaltungsaufwand',
+                        'Doppelte Lizenzkosten müssen gerechtfertigt werden',
+                        'Teams müssen in beiden Technologien geschult werden'
+                    ],
+                    costEstimate: 'Kombinierte Kosten: Mindestens 2.500€/Monat aufwärts'
+                }
+            };
+            
+            const result = results[recommendation];
+            resultContainer.className = `result-container result-${recommendation} show`;
+            resultContainer.innerHTML = `
+                <div class="result-title">
+                    <span class="icon">${result.title.split(' ')[0]}</span>
+                    <span>${result.title.split(' ').slice(1).join(' ')}</span>
+                </div>
+                <div class="result-description">${result.description}</div>
+                
+                <div class="result-details">
+                    <h3>💰 Kostenindikation:</h3>
+                    <p>${result.costEstimate}</p>
+                </div>
+                
+                <div class="result-details">
+                    <h3>✅ Hauptgründe für diese Empfehlung:</h3>
+                    <ul>
+                        ${result.reasons.map(r => `<li>${r}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div class="result-details">
+                    <h3>🚀 Empfohlene nächste Schritte:</h3>
+                    <ul>
+                        ${result.nextSteps.map(s => `<li>${s}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div class="result-details">
+                    <h3>⚠️ Zu beachten:</h3>
+                    <ul>
+                        ${result.considerations.map(c => `<li>${c}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div class="result-details" style="background: rgba(255,255,255,0.3);">
+                    <h3>📊 Ihre Bewertung im Detail:</h3>
+                    <p>Databricks: ${scores.databricks} Punkte<br>
+                    Microsoft Fabric: ${scores.fabric} Punkte<br>
+                    Kombination: ${scores.combination} Punkte</p>
+                </div>
+            `;
+            
+            document.getElementById('resetBtn').classList.remove('hidden');
+            document.getElementById('scoreDisplay').classList.remove('show');
+        }
+        
+        function resetQuiz() {
+            // Reset alle Variablen
+            Object.keys(answers).forEach(key => delete answers[key]);
+            currentQuestion = 1;
+            scores = { databricks: 0, fabric: 0, combination: 0 };
+            
+            // Reset UI
+            document.querySelectorAll('.decision-container').forEach((container, index) => {
+                container.classList.remove('active');
+                if (index > 0) container.classList.add('hidden');
+                else container.classList.add('active');
+                
+                container.querySelectorAll('.option-btn').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+            });
+            
+            document.getElementById('result').classList.remove('show');
+            document.getElementById('resetBtn').classList.add('hidden');
+            document.getElementById('scoreDisplay').classList.remove('show');
+            document.getElementById('progressBar').style.width = '0%';
+            
+            // Reset Score Display
+            document.getElementById('databricksScore').textContent = '0';
+            document.getElementById('fabricScore').textContent = '0';
+            document.getElementById('combinationScore').textContent = '0';
+        }
+    </script>
+</body>
+</html>
