@@ -424,6 +424,11 @@
                 return; // Question already answered
             }
             
+            // Check if this is the current active question
+            if (questionId !== `q${currentQuestion}`) {
+                return; // Only allow answering the current question
+            }
+            
             answers[questionId] = value;
             
             // Visuelles Feedback
